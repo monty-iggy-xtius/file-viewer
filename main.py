@@ -3,6 +3,7 @@ from CTkMessagebox import CTkMessagebox
 from bs4 import BeautifulSoup as bs
 from tkinter import _tkinter
 import customtkinter as ctk
+import random
 import tkinter as tk
 import pandas as pd
 import PyPDF2
@@ -39,10 +40,17 @@ ctk.set_appearance_mode("dark")
 
 
 def display_file_contents(received_file):
-    # new pop-up window to display selected content
+    """
+    This function creates the window for displaying data in a valid file. It makes use of a top-level widget so that it doesn't cause errors to the parent widget when closed/destroyed.
+    """
+    # final message will be concatenated to a string to make the whole data
     final_message = ''
 
-    data_display_window = ctk.CTk()
+    # optional backgrounds for the data display window
+    data_bg = random.choice(["#0d1f23", "gray12"])
+
+    # using a top level widget dissipates the error
+    data_display_window = ctk.CTkToplevel()
     data_display_window.geometry("{}x{}".format(
         DISPLAY_WINDOW_WIDTH, DISPLAY_WINDOW_HEIGHT))
 
@@ -57,14 +65,15 @@ def display_file_contents(received_file):
     finally:
         data_display_window.resizable(False, False)
 
-        data_display_frame = ctk.CTkFrame(data_display_window)
+        data_display_frame = ctk.CTkFrame(
+            data_display_window, corner_radius=0, fg_color=data_bg)
         data_display_frame.place(relx=0, rely=0, relheight=1, relwidth=1)
 
         scroll_window = ctk.CTkTextbox(
             data_display_frame,
             font=GENERAL_FONT,
             # tuple for light theme and dark theme
-            fg_color=("#ffffff", "gray12"),
+            fg_color=("#ffffff", data_bg),
             wrap="word",
             activate_scrollbars=False,
             corner_radius=3
@@ -74,13 +83,13 @@ def display_file_contents(received_file):
         # create a scroll bar for lengthy text and data
         data_scroll_bar = ctk.CTkScrollbar(
             data_display_frame,
-            bg_color="#403d39",  # background of the scrollbar
+            # bg_color="#403d39",  # background of the scrollbar
             # actual color of the scrollbar
-            button_hover_color=("#0d1f23", "#2d4a53"),
+            button_hover_color=("#0d1f23", "#f9844a"),
             command=scroll_window.yview
         )
         data_scroll_bar.place(
-            relx=0.99, rely=0, relheight=1)
+            relx=0.99, rely=0.1, relheight=0.8)
 
         scroll_window.configure(yscrollcommand=data_scroll_bar.set)
         scroll_window.grid_columnconfigure(0, weight=1)
@@ -134,7 +143,6 @@ def display_file_contents(received_file):
                     current_page_data = current_page.extract_text()
                     final_message += f"\n\t Page: {current_page_number} \n{current_page_data} \n"
 
-
         except:
             final_message += GENERAL_ERROR
 
@@ -157,6 +165,9 @@ def display_file_contents(received_file):
 
 
 def error_message(name):
+    """
+    This function returns different error messages for different scenarios.
+    """
     # check for length of error message
     if len(name) > 0:
         CTkMessagebox(
@@ -184,6 +195,9 @@ def error_message(name):
 
 
 def read_file(file_name):
+    """
+    This function checks the given file input for a valid file extension and decides what action to take.
+    """
     # remove any trailing/leading spaces in the filename
     file_name = file_name.strip()
     # get extension of current file
@@ -211,7 +225,9 @@ def read_file(file_name):
 
 
 def update_time():
-    # update time label every second
+    """
+    This function updates the time label after every 1000ms
+    """
     global time_label
     current_time = time.strftime("%a %H: %M: %S")
     time_label.configure(text=current_time)
@@ -273,14 +289,14 @@ def main_screen():
         text_entry.place(relx=0.05, rely=0.37, relwidth=0.9, relheight=0.11)
 
         # view file button
-        first_button = ctk.CTkButton(main_window, text="View File", font=BUTTON_FONT, width=BUTTON_WIDTH,
-                                     # define colors for the button effects
-                                     fg_color=("#6b9080", "#196e73"),
-                                     hover_color="#449a9a",
-                                     # pass data from the text entry widget
-                                     command=lambda: read_file(file_path.get()))
+        view_file_button = ctk.CTkButton(main_window, text="View File", font=BUTTON_FONT, width=BUTTON_WIDTH,
+                                         # define colors for the button effects
+                                         fg_color=("#6b9080", "#196e73"),
+                                         hover_color="#449a9a",
+                                         # pass data from the text entry widget
+                                         command=lambda: read_file(file_path.get()))
 
-        first_button.place(relx=0.23, rely=0.56)
+        view_file_button.place(relx=0.23, rely=0.56)
 
         exit_button = ctk.CTkButton(main_window, text="Exit", font=BUTTON_FONT, width=BUTTON_WIDTH,
                                     # define colors for the button effects
